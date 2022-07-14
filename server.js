@@ -14,3 +14,7 @@ app.get('/pet', function(req, res){
 app.get('/beauty', function(req, res){
   res.send('This is the page you can shop for your beauty');
 });
+
+app.get('/', function(req, res){
+  res.sendFile(__dirname + '/index.html');
+});
