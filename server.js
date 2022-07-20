@@ -55,11 +55,7 @@ app.post('/add', function(req, res){
         if(error){return console.log(error)}
         res.send('done');
        });
-
-     })
-
-
-     
+     })     
   })
 });
 
@@ -73,4 +69,8 @@ db.collection('post').find().toArray(function(error, result){
   res.render('list.ejs', { posts : result});
 })
 
+});
+
+app.delete('/delte', function(req, res){
+  console.log(req.body);
 });
