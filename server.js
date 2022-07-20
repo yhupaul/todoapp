@@ -71,6 +71,19 @@ db.collection('post').find().toArray(function(error, result){
 
 });
 
-app.delete('/delte', function(req, res){
+app.delete('/delete', function(req, res){
   console.log(req.body);
+  req.body._id = parseInt(req.body._id);
+  //요청 .body에 다겨온 계시문번호를 가진 글을 db에서 찾아서 삭제해주세요
+  db.collection('post').deleteOne(req.body, function(error, result){
+    console.log('deleted')
+    res.status(200).send({ message : 'succeed'})
+  })
 });
+
+app.get('/detail/:id', function(req, res){
+  db.collection('post').findOne({_id : parseInt(req.params.id)}, function(error, result){
+    console.log(result)
+    res.render('detail.ejs', { data : result });
+  })
+})

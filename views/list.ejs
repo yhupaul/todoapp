@@ -45,13 +45,14 @@
       <ul class="list-group">
         <% for (let i = 0; i < posts.length; i++){ %>
         <li class="list-group-item">
+          <p>Number of task : <%= posts[i]._id %></p>
           <h4>todo task : <%= posts[i].task %> </h4>
           <p>due date : <%= posts[i].date %></p>
-          <button>Delete</button>
+          <button class="delete" data-id="<%= posts[i]._id %>">Delete</button>
         </li>
         <% } %>
       </ul>
-
+<!--data-id 속성에 _id를 숨길 수 있다. 이 것을 사용하여 클릭한 것만 선택할 수 있다-->>
     <!-- AJAX
     새로고침 없이 server와 통신을할 수 있게 도와는 JS 문법
     jquery를 라이브러리 도움을 받아 ajax 요청
@@ -60,11 +61,24 @@
     <!--Ajax 문법-->
     <script>
 
-      $.ajax({
-        method : 'DELETE',
-        url : 'delete',
-        data : 'postnumber'
-      }).done(function(result){
+      $('.delete').click(function(e){
+        let targetID = e.target.dataset.id; //타것 잡는 문법!!
+        let currentTarget = $(this);
+
+        $.ajax({
+          method : 'DELETE',
+          url : '/delete',
+          data : { _id : targetID }
+        }).done(function(result){
+          //성공했을 때
+          //페이지를 강제로 새로고침해주세요
+          //삭제버튼을 누른 <li> 요소를 제거해주세요/ 안보이게
+            console.log('succeed');
+            currentTarget.parent('li').fadeOut();
+        }).fail(function(xhr, textStatus, errorThrown){
+          //실패했을 때
+          console.log(xhr, textStatus, errorThrown);
+        })
 
       })
 
