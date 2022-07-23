@@ -72,7 +72,7 @@ app.get('/list', function(req, res){
 
 //DB에 저장된 post라는 collection 안의 모든 데이터를 꺼네주세요
 db.collection('post').find().toArray(function(error, result){
-  console.log(result);
+  // console.log(result);
   res.render('list.ejs', { posts : result});
 })
 
@@ -112,6 +112,7 @@ app.put('/edit', function(req, res){
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
+const { reset } = require('nodemon');
 
 app.use(session({secret : 'secretCode', resave : true, saveUninitialized: false}));
 app.use(passport.initialize());
@@ -169,5 +170,21 @@ function login(req, res, next){
 }
 
 app.get('/search', (req, res)=>{
-  console.log(req.query);
+  let searchCondition = [
+   { 
+      $search: {
+        index: 'titleSearch',
+        text: {
+          query: req.query.value,
+          path: 'task'
+        }
+      }
+    },
+    { $sort : { _id : 1 } }
+  ]
+  console.log(req.query.value)
+  db.collection('post').aggregate(searchCondition).toArray((error, result)=>{
+    console.log(result)
+    res.render('search.ejs', { posts: result })
+  })
 })
