@@ -46,25 +46,6 @@ app.get('/', function(req, res){
 app.get('/write', function(req, res){
   res.render('write.ejs');
 });
- 
-app.post('/add', function(req, res){
-  //inside of counter collection, there is name: 'postNumber object,
-  //we can reach out to totalPost in order to increase the id number
-  db.collection('counter').findOne({name : 'postNumber'}, function(error, result){
-    console.log(result.totalPost)
-     var totalPostNumber = result.totalPost;
-
-     db.collection('post').insertOne( { _id: totalPostNumber + 1, task: req.body.title, date: req.body.date} , function(){
-       console.log('saved!')
-       //counter라는 콜렉션에 있는  totalPost라는 항목도 1 증가시켜야함
-       //$set, inc... mongoDB operator
-       db.collection('counter').updateOne({name : 'postNumber'}, { $inc : { totalPost : 1} } , function(error, result){
-        if(error){return console.log(error)}
-        res.send('done');
-       });
-     })     
-  })
-});
 
 //list로 GET 요펑으로 접속하면 
 //실제 DB에 저장된 데이터들로 얘쁘게 꾸며진 HTML을 보여줌
@@ -76,16 +57,6 @@ db.collection('post').find().toArray(function(error, result){
   res.render('list.ejs', { posts : result});
 })
 
-});
-
-app.delete('/delete', function(req, res){
-  console.log(req.body);
-  req.body._id = parseInt(req.body._id);
-  //요청 .body에 다겨온 계시문번호를 가진 글을 db에서 찾아서 삭제해주세요
-  db.collection('post').deleteOne(req.body, function(error, result){
-    console.log('deleted')
-    res.status(200).send({ message : 'succeed'})
-  })
 });
 
 app.get('/detail/:id', function(req, res){
@@ -154,7 +125,48 @@ passport.serializeUser(function(user, done){
 passport.deserializeUser(function(아이디, done){
   
   done(null, {})
-})
+});
+
+app.post('/register', function(req, res){
+  db.collection('login').insertOne( { id : req.body.id, pw : req.body.pw }, function(error, result){
+    res.redirect('/')
+  })
+});
+
+app.post('/add', function(req, res){
+  //inside of counter collection, there is name: 'postNumber object,
+  //we can reach out to totalPost in order to increase the id number
+  db.collection('counter').findOne({name : 'postNumber'}, function(error, result){
+    console.log(result.totalPost)
+     let totalPostNumber = result.totalPost;
+
+     let data = {_id: totalPostNumber + 1, task: req.body.title, date: req.body.date, writer : req.user._id}
+
+     db.collection('post').insertOne(data , function(){
+       console.log('saved!')
+       //counter라는 콜렉션에 있는  totalPost라는 항목도 1 증가시켜야함
+       //$set, inc... mongoDB operator
+       db.collection('counter').updateOne({name : 'postNumber'}, { $inc : { totalPost : 1} } , function(error, result){
+        if(error){return console.log(error)}
+        res.send('done');
+       });
+     })     
+  })
+});
+
+app.delete('/delete', function(req, res){
+  console.log(req.body);
+  req.body._id = parseInt(req.body._id);
+
+  let data = { _id : req.body.id, writer : req.user._id }
+
+  //요청 .body에 다겨온 계시문번호를 가진 글을 db에서 찾아서 삭제해주세요
+  db.collection('post').deleteOne(data, function(error, result){
+    console.log('deleted')
+    if(result) {console.log(result)}
+    res.status(200).send({ message : 'succeed'})
+  })
+});
 
 app.get('/mypage', login,function(req, res){
   res.render('mypage.ejs')
